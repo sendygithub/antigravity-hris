@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Employee {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String   @unique
+  role        String
+  department  String
+  status      String   // Active, On Leave, Terminated
+  joinedDate  DateTime @default(now())
+  avatar      String?
+
+  attendance    Attendance[]
+  payroll       Payroll[]
+  leaveRequests LeaveRequest[]
+  tasks         Task[]
+  
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  date       DateTime
+  checkIn    String?
+  checkOut   String?
+  status     String   // Present, Late, Absent, On Leave
+
+  @@index([employeeId])
+  @@index([date])
+}
+
+model Role {
+  id          String @id @default(uuid())
+  title       String @unique
+  description String
+  permissions String // JSON string for simplicity, or Json type if Postgres specific
+}
+
+model Payroll {
+  id          String   @id @default(uuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  salary      Decimal
+  status      String   // Paid, Processing, Pending
+  paymentDate DateTime
+}
+
+model LeaveRequest {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  type       String   // Sick, Annual, Personal
+  startDate  DateTime
+  endDate    DateTime
+  reason     String
+  status     String   // Pending, Approved, Rejected
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  assigneeId  String
+  assignee    Employee @relation(fields: [assigneeId], references: [id])
+  priority    String   // Critical, High, Medium, Low
+  status      String   // To Do, In Progress, Done
+  dueDate     DateTime
+}
