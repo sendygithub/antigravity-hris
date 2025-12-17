@@ -4,21 +4,34 @@ import { prisma } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
-    const role = await prisma.role.create({
+    const employee = await prisma.employee.create({
         data: {
-            title: body.title,
-            description: body.description,
-            permissions: body.permissions,
+            id: body.id,
+            Name: body.Name,
+            email: body.email,
+            status: body.status,
+            hiredDate: body.hiredDate,
+            joinedDate: body.joinedDate,
+            updatedAt: body.updatedAt,
+            createdAt: body.createdAt,
+            roleId: body.roleId,
+            departmentId: body.departmentId,
+
+            attendance: body.attendance,
+            payroll: body.payroll,
+            leaveRequests: body.leaveRequests,
+            tasks: body.tasks,
+
         }
     });
-    return NextResponse.json(role);
+    return NextResponse.json(employee);
 }
 
 
 export async function GET() {
     try {
-        const roles = await prisma.role.findMany();
-        return NextResponse.json(roles);
+        const employees = await prisma.employee.findMany();
+        return NextResponse.json(employees);
     } catch (error) {
         console.log(error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -4,20 +4,22 @@ import { prisma } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
-    const role = await prisma.role.create({
+    const attendance = await prisma.attendance.create({
         data: {
-            title: body.title,
-            description: body.description,
-            permissions: body.permissions,
+            employeeId: body.employeeId,
+            date: body.date,
+            checkIn: body.checkIn,
+            checkOut: body.checkOut,
+            status: body.status,
         }
     });
-    return NextResponse.json(role);
+    return NextResponse.json(attendance);
 }
 
 
 export async function GET() {
     try {
-        const roles = await prisma.role.findMany();
+        const roles = await prisma.attendance.findMany();
         return NextResponse.json(roles);
     } catch (error) {
         console.log(error);

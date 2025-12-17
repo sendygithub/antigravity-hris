@@ -4,11 +4,13 @@ import { prisma } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
-    const role = await prisma.role.create({
+    const role = await prisma.payroll.create({
         data: {
-            title: body.title,
-            description: body.description,
-            permissions: body.permissions,
+            id: body.id,
+            employeeId: body.employeeId,
+            salary: body.salary,
+            status: body.status,
+            paymentDate: body.paymentDate,
         }
     });
     return NextResponse.json(role);
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
     try {
-        const roles = await prisma.role.findMany();
+        const roles = await prisma.payroll.findMany();
         return NextResponse.json(roles);
     } catch (error) {
         console.log(error);
