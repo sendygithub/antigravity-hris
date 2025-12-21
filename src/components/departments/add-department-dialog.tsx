@@ -25,20 +25,14 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
+
+import { Card, } from "@/components/ui/card"
 import { toast } from "sonner"
 
 const formSchema = z.object({
-    name: z.string().min(2, "Department name must be at least 2 characters"),
-    head: z.string().min(2, "Head of department is required"),
-    budget: z.string().min(1, "Budget is required"),
+    description: z.string().min(2).trim(),
+name: z.string().min(2).trim(),
+
 })
 
 export function AddDepartmentDialog() {
@@ -47,17 +41,31 @@ export function AddDepartmentDialog() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
-            head: "",
-            budget: "",
+            description: "",
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // In a real app, this would be a server action
-        console.log(values)
-        toast.success("Department created successfully")
-        setOpen(false)
-        form.reset()
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+       try {
+            const res = await fetch("/api/departments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(values),
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                toast.error(data.message || "Failed to create department")
+            }
+            toast.success("Department created successfully")
+            
+            form.reset()
+            setOpen(false)
+        } catch (error) {
+            toast.error("An unexpected error occurred.")
+            console.error(error)
+        }
     }
 
     return (
@@ -86,58 +94,28 @@ export function AddDepartmentDialog() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Department Name</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select department" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Sales">Sales</SelectItem>
-                                            <SelectItem value="IT Support">IT Support</SelectItem>
-                                            <SelectItem value="Operations">Operations</SelectItem>
-                                            <SelectItem value="Finance">Finance</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="head"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Head of Department</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select manager" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Sarah Miller">Sarah Miller</SelectItem>
-                                            <SelectItem value="Michael Chen">Michael Chen</SelectItem>
-                                            <SelectItem value="David Wilson">David Wilson</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="budget"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Annual Budget</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="$50,000" {...field} />
+                                        <Input placeholder="e.g. IT/Finance" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Head of Department</FormLabel>
+                                     <FormControl>
+                                        <Input placeholder="e.g. money " {...field} />
+                                    </FormControl>
+                                   
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        
                         <DialogFooter>
                             <Button type="submit">Create Department</Button>
                         </DialogFooter>

@@ -18,16 +18,16 @@ export async function DELETE(
     }
 
     try {
-        // hapus role dari database berdasarkan id
-        const role = await prisma.role.delete({
+        // hapus attendance dari database berdasarkan id
+        const attendance = await prisma.attendance.delete({
             where: { id: intId }, // kriteria delete
         });
 
         // kembalikan response sukses
         return NextResponse.json(
             {
-                message: "Role deleted successfully",
-                role, // data role yang dihapus
+                message: "attendance deleted successfully",
+                attendance, // data attendance yang dihapus
             },
             { status: 200 } // HTTP 200 OK
         );
@@ -35,7 +35,7 @@ export async function DELETE(
         // jika error P2025: record tidak ditemukan
         if (e.code === "P2025") {
             return NextResponse.json(
-                { error: "Role not found" },
+                { error: "attendance not found" },
                 { status: 404 } // HTTP 404 Not Found
             );
         }
@@ -72,21 +72,21 @@ export async function PUT(
     }
 
     try {
-        // update role di database berdasarkan id
-        const role = await prisma.role.update({
+        // update attendance di database berdasarkan id
+        const attendance = await prisma.attendance.update({
             where: { id: intId }, // kriteria update
             data: body, // data yang dikirim untuk update
         });
 
         // kembalikan response sukses
         return NextResponse.json({
-            message: "Role updated successfully",
-            role, // data role setelah diupdate
+            message: "attendance updated successfully",
+            attendance, // data attendance setelah diupdate
         });
     } catch (e: any) {
         // jika error P2025: record tidak ditemukan
         return NextResponse.json(
-            { error: e.code === "P2025" ? "Role not found" : "Something went wrong" },
+            { error: e.code === "P2025" ? "attendance not found" : "Something went wrong" },
             { status: e.code === "P2025" ? 404 : 500 } // 404 jika tidak ada, 500 untuk error lainnya
         );
     }

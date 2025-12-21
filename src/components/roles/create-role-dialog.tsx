@@ -27,11 +27,12 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-import { createRole } from "@/actions/create-role"
+
 
 const formSchema = z.object({
     title: z.string().min(2, "Title must be at least 2 characters"),
     description: z.string().min(10, "Description must be at least 10 characters"),
+    permissions: z.string().min(10, "Description must be at least 10 characters")
 })
 
 export function CreateRoleDialog() {
@@ -41,22 +42,35 @@ export function CreateRoleDialog() {
         defaultValues: {
             title: "",
             description: "",
+            permissions:""
         },
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const result = await createRole(values)
-        if (result.success) {
+        try {
+            const res =await fetch("/api/role", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        })
+            const data = await res.json()
+            if (!res.ok) {
+                toast.error(data.message || "Failed to create role")
+            }
             toast.success("Role created successfully")
-            setOpen(false)
+
             form.reset()
-        } else {
-            toast.error(result.error || "Failed to create role")
+            setOpen(false)
+        } catch (error) {
+            toast.error("An unexpected error occurred.")
+            console.error(error)
         }
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button>
                     <Plus className="mr-2 h-4 w-4" /> Create Role
@@ -68,9 +82,11 @@ export function CreateRoleDialog() {
                     <DialogDescription>
                         Define a new role and its permissions.
                     </DialogDescription>
-                </DialogHeader>
+                </DialogHeader> 
+                
+                
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                             control={form.control}
                             name="title"
@@ -101,12 +117,36 @@ export function CreateRoleDialog() {
                                 </FormItem>
                             )}
                         />
+                         <FormField
+                            control={form.control}
+                            name="permissions"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Permissions</FormLabel>
+                                    <FormControl>
+                                        <Textarea
+                                            placeholder="Describe the permissions..."
+                                            className="resize-none"
+                                            {...field}
+                                        />
+                                            
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        
                         <DialogFooter>
                             <Button type="submit">Create Role</Button>
                         </DialogFooter>
-                    </form>
+                    
+                </form>
                 </Form>
+                
             </DialogContent>
         </Dialog>
+
+       
+        
     )
 }

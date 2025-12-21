@@ -6,17 +6,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const employee = await prisma.employee.create({
         data: {
-            id: body.id,
+
             Name: body.Name,
             email: body.email,
             status: body.status,
             hiredDate: body.hiredDate,
             joinedDate: body.joinedDate,
-            updatedAt: body.updatedAt,
-            createdAt: body.createdAt,
             roleId: body.roleId,
             departmentId: body.departmentId,
-
             attendance: body.attendance,
             payroll: body.payroll,
             leaveRequests: body.leaveRequests,

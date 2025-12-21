@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Plus } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -33,37 +32,66 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { createEmployee } from "@/actions/create-employee"
 
+// --- Zod schema disesuaikan dengan Prisma ---
 const formSchema = z.object({
-    firstName: z.string().min(2, "First name must be at least 2 characters"),
-    lastName: z.string().min(2, "Last name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    role: z.string().min(2, "Role is required"),
-    department: z.string().min(2, "Department is required"),
+    Name: z.string().min(2, "Nama minimal 2 karakter"),
+    email: z.string().email("Email tidak valid"),
+    status: z.string().min(1, "Status wajib diisi"),
+    // Mengubah string dari input date menjadi Date Object
+    hiredDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
+    joinedDate: z.string().min(1, "Tanggal bergabung wajib diisi"),
+    // Kirim ID sebagai angka sesuai schema Prisma
+    roleId: z.string().min(1, "Role wajib dipilih"),
+    departmentId: z.string().min(1, "Department wajib dipilih"),
 })
 
 export function AddEmployeeDialog() {
     const [open, setOpen] = useState(false)
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            firstName: "",
-            lastName: "",
+            Name: "",
             email: "",
-            role: "",
-            department: "",
+            status: "",
+            hiredDate: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
+            joinedDate: new Date().toISOString().split('T')[0],
+            roleId: "",
+            departmentId: "",
         },
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const result = await createEmployee(values)
-        if (result.success) {
-            toast.success("Employee added successfully")
-            setOpen(false)
+        try {
+            // Transformasi data sebelum dikirim ke API
+            const payload = {
+                ...values,
+                roleId: parseInt(values.roleId),
+                departmentId: parseInt(values.departmentId),
+                hiredDate: new Date(values.hiredDate).toISOString(),
+                joinedDate: new Date(values.joinedDate).toISOString(),
+            }
+
+            const res = await fetch("/api/employees", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                toast.error(data.message || "Gagal menambahkan karyawan")
+                return
+            }
+
+            toast.success("Karyawan berhasil ditambahkan")
             form.reset()
-        } else {
-            toast.error("Failed to add employee")
+            setOpen(false)
+        } catch (error) {
+            toast.error("Terjadi kesalahan sistem")
+            console.error(error)
         }
     }
 
@@ -77,99 +105,124 @@ export function AddEmployeeDialog() {
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Add Employee</DialogTitle>
-                    <DialogDescription>
-                        Add a new employee to the system. Click save when you're done.
-                    </DialogDescription>
+                    <DialogDescription>Masukkan data karyawan baru sesuai form di bawah.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="firstName"
+                            name="Name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>First Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="John" {...field} />
-                                    </FormControl>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="lastName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Last Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Doe" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Email</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="john.doe@company.com" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="role"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Role</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a role" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Product Designer">Product Designer</SelectItem>
-                                            <SelectItem value="Frontend Developer">Frontend Developer</SelectItem>
-                                            <SelectItem value="Backend Developer">Backend Developer</SelectItem>
-                                            <SelectItem value="HR Manager">HR Manager</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="department"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Department</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a department" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="Engineering">Engineering</SelectItem>
-                                            <SelectItem value="Design">Design</SelectItem>
-                                            <SelectItem value="Human Resources">Human Resources</SelectItem>
-                                            <SelectItem value="Marketing">Marketing</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Email</FormLabel>
+                                        <FormControl><Input placeholder="name@gmail.com" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Status</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="magang">Magang</SelectItem>
+                                                <SelectItem value="harian">Harian</SelectItem>
+                                                <SelectItem value="bulanan">Bulanan</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="hiredDate"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Hire Date</FormLabel>
+                                        <FormControl><Input type="date" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="joinedDate"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Joined Date</FormLabel>
+                                        <FormControl><Input type="date" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="roleId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Role</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger><SelectValue placeholder="Role" /></SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="1">Engineering</SelectItem>
+                                                <SelectItem value="2">Design</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="departmentId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Department</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger><SelectValue placeholder="Dept" /></SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="1">IT</SelectItem>
+                                                <SelectItem value="2">HR</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
                         <DialogFooter>
-                            <Button type="submit">Save changes</Button>
+                            <Button type="submit" className="w-full">Save Employee</Button>
                         </DialogFooter>
                     </form>
                 </Form>

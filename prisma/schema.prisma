@@ -7,7 +7,7 @@ datasource db {
 }
 
 model Employee {
-  id           String   @id @default(uuid())
+  id           Int        @id @default(autoincrement())
   Name         String
   email        String   @unique
   status       String
@@ -16,7 +16,7 @@ model Employee {
   updatedAt    DateTime @updatedAt
   createdAt    DateTime @default(now())
   roleId       Int
-  departmentId String
+  departmentId Int
 
   attendance    Attendance[]
   role          Role           @relation(fields: [roleId], references: [id])
@@ -27,12 +27,12 @@ model Employee {
 }
 
 model Attendance {
-  id         String   @id @default(uuid())
-  employeeId String
+  id         Int        @id @default(autoincrement())
+  employeeId Int
   employee   Employee @relation(fields: [employeeId], references: [id])
   date       DateTime
-  checkIn    String?
-  checkOut   String?
+  checkIn    DateTime?
+  checkOut   DateTime?
   status     String // Present, Late, Absent, On Leave
 
   @@index([employeeId])
@@ -48,8 +48,8 @@ model Role {
 }
 
 model Payroll {
-  id          String   @id @default(uuid())
-  employeeId  String
+  id          Int        @id @default(autoincrement())
+  employeeId  Int
   employee    Employee @relation(fields: [employeeId], references: [id])
   salary      Decimal  @db.Decimal(12, 2)
   status      String // Paid, Processing, Pending
@@ -57,8 +57,8 @@ model Payroll {
 }
 
 model LeaveRequest {
-  id         String   @id @default(uuid())
-  employeeId String
+  id         Int        @id @default(autoincrement())
+  employeeId Int
   employee   Employee @relation(fields: [employeeId], references: [id])
   type       String // Sick, Annual, Personal
   startDate  DateTime
@@ -68,16 +68,16 @@ model LeaveRequest {
 }
 
 model Department {
-  id          String     @id @default(uuid())
+  id          Int        @id @default(autoincrement())
   name        String     @unique
   description String
   employees   Employee[]
 }
 
 model Task {
-  id         String   @id @default(uuid())
+  id        Int        @id @default(autoincrement())
   title      String
-  assigneeId String
+  assigneeId Int
   assignee   Employee @relation(fields: [assigneeId], references: [id])
   priority   String
   status     String

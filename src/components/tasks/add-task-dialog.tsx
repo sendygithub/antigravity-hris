@@ -41,11 +41,14 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { id } from "date-fns/locale"
 
 const formSchema = z.object({
     title: z.string().min(2, "Title is required"),
     assignee: z.string().min(1, "Assignee is required"),
+    status: z.string().min(1, "Status is required"),
     priority: z.string().min(1, "Priority is required"),
+    id: z.string().optional(),
     dueDate: z.date(),
 })
 
@@ -55,16 +58,36 @@ export function AddTaskDialog() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
-            assignee: "",
             priority: "",
+            status: "",
+            dueDate: new Date(),
+            assignee: "",
+            id: "",
+            
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
-        toast.success("Task created successfully")
-        setOpen(false)
-        form.reset()
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+         try {
+            const res =await fetch("/api/tasks", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(values),
+        })
+            const data = await res.json()
+            if (!res.ok) {
+                toast.error(data.message || "Failed to create role")
+            }
+            toast.success("Role created successfully")
+
+            form.reset()
+            setOpen(false)
+        } catch (error) {
+            toast.error("An unexpected error occurred.")
+            console.error(error)
+        } 
     }
 
     return (
@@ -90,7 +113,7 @@ export function AddTaskDialog() {
                                 <FormItem>
                                     <FormLabel>Task Title</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Fix navigation bug" {...field} />
+                                        <Input placeholder="go to market" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -103,18 +126,9 @@ export function AddTaskDialog() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Assignee</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select user" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="emp1">Sarah Miller</SelectItem>
-                                                <SelectItem value="emp2">Michael Chen</SelectItem>
-                                                <SelectItem value="emp3">David Wilson</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <FormControl>
+                                        <Input placeholder="name of employee" {...field} />
+                                    </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -184,6 +198,19 @@ export function AddTaskDialog() {
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Status</FormLabel>
+                                        <FormControl>
+                                        <Input placeholder="Fix navigation bug" {...field} />
+                                    </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         <DialogFooter>
                             <Button type="submit">Create Task</Button>
                         </DialogFooter>

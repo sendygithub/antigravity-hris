@@ -32,10 +32,13 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { Input } from "../ui/input"
 
 const formSchema = z.object({
-    month: z.string().min(1, "Please select a month"),
-    year: z.string().min(4, "Please select a year"),
+    employeeId: z.string().min(1, "Please select a month"),
+    status: z.string().min(4, "Please select a year"),
+    paymentDate: z.string().min(1, "Please select a payment date"),
+    salary: z.string().min(1, "Please enter a salary amount"),
 })
 
 export function RunPayrollDialog() {
@@ -43,23 +46,50 @@ export function RunPayrollDialog() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            month: new Date().getMonth().toString(), // Current month roughly
-            year: new Date().getFullYear().toString(),
+            employeeId: "",
+            status: "",
+            paymentDate: "",
+            salary: "",
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // In a real app, this would trigger a server action
-        console.log(values)
-        toast.success("Payroll run successfully for selected period")
-        setOpen(false)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        try {
+            const payload = {
+                employeeId: parseInt(values.employeeId), // String to Int
+                salary: parseFloat(values.salary),       // String to Decimal/Float
+                status: values.status,                   // String
+                paymentDate: new Date(values.paymentDate).toISOString(), // String to DateTime
+            }
+            const res = await fetch("/api/payroll", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                toast.error(data.message || "Gagal menambahkan salary")
+                return
+            }
+
+            toast.success("salary berhasil ditambahkan")
+            form.reset()
+            setOpen(false)
+        } catch (error) {
+
+             toast.error("Terjadi kesalahan sistem")
+            console.error(error)
+            
+        }
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button>
-                    <Plus className="mr-2 h-4 w-4" /> Run Payroll
+                    <Plus className="mr-2 h-4 w-4" /> Input Payroll
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -71,32 +101,49 @@ export function RunPayrollDialog() {
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
+                        <div className="grid grid-cols-2 gap-4"> 
+                            
+                              <FormField
                                 control={form.control}
-                                name="month"
+                                name="employeeId"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Month</FormLabel>
+                                        <FormLabel>ID Employee</FormLabel>
+                                        <FormControl><Input type="number" placeholder="John Doe" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            
+                             
+                            <FormField
+                                control={form.control}
+                                name="paymentDate"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Payment Date</FormLabel>
+                                        <FormControl><Input type="date"{...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            
+                            
+                            <FormField
+                                control={form.control}
+                                name="status"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Status</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select month" />
-                                                </SelectTrigger>
+                                                <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="0">January</SelectItem>
-                                                <SelectItem value="1">February</SelectItem>
-                                                <SelectItem value="2">March</SelectItem>
-                                                <SelectItem value="3">April</SelectItem>
-                                                <SelectItem value="4">May</SelectItem>
-                                                <SelectItem value="5">June</SelectItem>
-                                                <SelectItem value="6">July</SelectItem>
-                                                <SelectItem value="7">August</SelectItem>
-                                                <SelectItem value="8">September</SelectItem>
-                                                <SelectItem value="9">October</SelectItem>
-                                                <SelectItem value="10">November</SelectItem>
-                                                <SelectItem value="11">December</SelectItem>
+                                                <SelectItem value="dibayar">Dibayar</SelectItem>
+                                                <SelectItem value="menunggu">Menunggu</SelectItem>
+                                                <SelectItem value="belum_dibayar">Belum Dibayar</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -105,29 +152,24 @@ export function RunPayrollDialog() {
                             />
                             <FormField
                                 control={form.control}
-                                name="year"
+                                name="salary"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Year</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select year" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="2023">2023</SelectItem>
-                                                <SelectItem value="2024">2024</SelectItem>
-                                                <SelectItem value="2025">2025</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <FormLabel>Salary</FormLabel>
+                                        <FormControl><Input placeholder="0" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
+
+
                         </div>
+                          
+
+
                         <DialogFooter>
-                            <Button type="submit">Process Payment</Button>
+                            <Button type="submit" className="hover bg-yellow-400">Save changes</Button>
                         </DialogFooter>
                     </form>
                 </Form>

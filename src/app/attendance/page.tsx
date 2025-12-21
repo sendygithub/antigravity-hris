@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AddAttendanceDialog } from "@/components/attendance/add-attendance-dialog";
 
 const attendanceData = [
     { id: 1, name: "Sarah Miller", time: "08:55 AM", status: "Present", department: "Design" },
@@ -14,7 +15,13 @@ const attendanceData = [
 export default function AttendancePage() {
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">Attendance</h1>
+            <div className="flex items-center justify-between"> 
+
+                <h1 className="text-3xl font-bold tracking-tight">Attendance</h1>
+            <AddAttendanceDialog/>
+
+            </div>
+            
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>

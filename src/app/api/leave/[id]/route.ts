@@ -18,16 +18,16 @@ export async function DELETE(
     }
 
     try {
-        // hapus role dari database berdasarkan id
-        const role = await prisma.role.delete({
+        // hapus leaverequest dari database berdasarkan id
+        const leaverequest = await prisma.leaveRequest.delete({
             where: { id: intId }, // kriteria delete
         });
 
         // kembalikan response sukses
         return NextResponse.json(
             {
-                message: "Role deleted successfully",
-                role, // data role yang dihapus
+                message: "leaverequest deleted successfully",
+                leaverequest, // data leaverequest yang dihapus
             },
             { status: 200 } // HTTP 200 OK
         );
@@ -35,7 +35,7 @@ export async function DELETE(
         // jika error P2025: record tidak ditemukan
         if (e.code === "P2025") {
             return NextResponse.json(
-                { error: "Role not found" },
+                { error: "leaverequest not found" },
                 { status: 404 } // HTTP 404 Not Found
             );
         }
@@ -72,21 +72,21 @@ export async function PUT(
     }
 
     try {
-        // update role di database berdasarkan id
-        const role = await prisma.role.update({
+        // update leaverequest di database berdasarkan id
+        const leaverequest = await prisma.leaveRequest.update({
             where: { id: intId }, // kriteria update
             data: body, // data yang dikirim untuk update
         });
 
         // kembalikan response sukses
         return NextResponse.json({
-            message: "Role updated successfully",
-            role, // data role setelah diupdate
+            message: "leaverequest updated successfully",
+            leaverequest, // data leaverequest setelah diupdate
         });
     } catch (e: any) {
         // jika error P2025: record tidak ditemukan
         return NextResponse.json(
-            { error: e.code === "P2025" ? "Role not found" : "Something went wrong" },
+            { error: e.code === "P2025" ? "leaverequest not found" : "Something went wrong" },
             { status: e.code === "P2025" ? 404 : 500 } // 404 jika tidak ada, 500 untuk error lainnya
         );
     }
