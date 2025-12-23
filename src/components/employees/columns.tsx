@@ -71,7 +71,7 @@ export const columns: ColumnDef<Employee>[] = [
         cell: ({ row }) => {
             const status = row.getValue("status") as string
             return (
-                <Badge variant={status === "Active" ? "default" : status === "On Leave" ? "secondary" : "destructive"}>
+                <Badge variant={status === "Active" ? "default" : status === "On Leavu" ? "secondary" : "destructive"}>
                     {status}
                 </Badge>
             )

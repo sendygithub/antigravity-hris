@@ -1,18 +1,94 @@
-import { employees } from "@/lib/mock-data"
-import { columns } from "@/components/employees/columns"
+"use client"
+import { ColumnDef } from "@tanstack/react-table"
 import { DataTable } from "@/components/employees/data-table"
 import { AddEmployeeDialog } from "@/components/employees/add-employee-dialog"
+import { useEffect, useState } from "react";
 
 export const dynamic = 'force-dynamic';
+// Tipe data employee
+type Employee = {
+  id: number
+  name: string
+  email: string
+  role: string
+}
 
-export default async function EmployeesPage() {
+// Definisi kolom tabel
+const columns: ColumnDef<Employee>[] = [
+  {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
+    accessorKey: "Name",
+    header: "Name",
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+  },
+  {
+    accessorKey: "roleId",
+    header: "Role",
+  },
+  {
+    accessorKey: "departmentId",
+    header: "Department ID",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+  },
+  {
+    accessorKey: "joinedDate",
+    header: "Joined Date",
+  },
+  
+  {
+    accessorKey: "hiredDate",
+    header: "Hire Date",
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created At",
+  },
+
+]
+export default function EmployeesPage() {
+
+  const [data, setData] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
+
+
+ 
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch("/api/employees")
+        if (!res.ok) throw new Error("Failed to fetch")
+        const result = await res.json()
+        setData(result)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+  
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  if (loading) return <p>Loading Data...</p>
+
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Employees</h1>
-                <AddEmployeeDialog />
+                <AddEmployeeDialog onSuccess={fetchEmployees} />
             </div>
-            <DataTable columns={columns} data={employees} />
+            <DataTable columns={columns} data={data} />
         </div>
     )
 }

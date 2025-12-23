@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { CalendarIcon, Plus } from "lucide-react"
-import { format } from "date-fns"
+import {  Plus } from "lucide-react"
+
 
 import { Button } from "@/components/ui/button"
 import {
@@ -33,19 +33,18 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { Input } from "../ui/input"
+
 
 const formSchema = z.object({
+    employeeId: z.string().min(1, "Please select employee"),
     type: z.string().min(1, "Please select leave type"),
-    dates: z.date(),
+    startDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
+    endDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
     reason: z.string().min(5, "Reason is required"),
+    status: z.string().optional(),
+
 })
 
 export function RequestLeaveDialog() {
@@ -55,15 +54,47 @@ export function RequestLeaveDialog() {
         defaultValues: {
             type: "",
             reason: "",
+            startDate:new Date().toISOString().split('T')[0],
+            endDate: new Date().toISOString().split('T')[0],
+            employeeId: "",
+            status: "Pending",
         },
     })
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
-        toast.success("Leave request submitted successfully")
-        setOpen(false)
-        form.reset()
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+
+        try {
+
+
+
+            const payload = {
+                ...values,
+                employeeId: parseInt(values.employeeId), 
+                startDate: new Date(values.startDate).toISOString(),
+                endDate: new Date(values.endDate).toISOString(),
+            }
+        const res = await fetch("/api/leave", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                toast.error(data.message || "Gagal menambahkan request cuti")
+                return
+            }
+
+            toast.success("Request berhasil ditambahkan")
+            form.reset()
+            setOpen(false)
+        } catch (error) {
+            toast.error("Terjadi kesalahan sistem")
+            console.error(error)
+        }
     }
+    
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -81,6 +112,26 @@ export function RequestLeaveDialog() {
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
+
+                    <FormField
+                            control={form.control}
+                            name="employeeId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Select employee</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                        
+                                        </FormControl>
+                                        <Input placeholder="Employee ID" {...field} />
+                                        
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
                         <FormField
                             control={form.control}
                             name="type"
@@ -106,41 +157,32 @@ export function RequestLeaveDialog() {
                         />
                         <FormField
                             control={form.control}
-                            name="dates"
+                            name="startDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
-                                    <FormLabel>Date</FormLabel>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
+                                    <FormLabel>Start Date</FormLabel>
+                                   
                                             <FormControl>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        "w-full pl-3 text-left font-normal",
-                                                        !field.value && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    {field.value ? (
-                                                        format(field.value, "PPP")
-                                                    ) : (
-                                                        <span>Pick a date</span>
-                                                    )}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
+                                                
                                             </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                disabled={(date) =>
-                                                    date < new Date("1900-01-01")
-                                                }
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                                                <Input type="date" {...field} />
+                                        
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>End Date</FormLabel>
+                                   
+                                            <FormControl>
+                                                <Input type="date" {...field} />
+                                            </FormControl>
+                                       
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -46,7 +46,7 @@ const formSchema = z.object({
     departmentId: z.string().min(1, "Department wajib dipilih"),
 })
 
-export function AddEmployeeDialog() {
+export function AddEmployeeDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -63,6 +63,7 @@ export function AddEmployeeDialog() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+       
         try {
             // Transformasi data sebelum dikirim ke API
             const payload = {
@@ -89,6 +90,7 @@ export function AddEmployeeDialog() {
             toast.success("Karyawan berhasil ditambahkan")
             form.reset()
             setOpen(false)
+            onSuccess?.()
         } catch (error) {
             toast.error("Terjadi kesalahan sistem")
             console.error(error)
