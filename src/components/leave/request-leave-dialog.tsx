@@ -47,7 +47,7 @@ const formSchema = z.object({
 
 })
 
-export function RequestLeaveDialog() {
+export function RequestLeaveDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -89,6 +89,7 @@ export function RequestLeaveDialog() {
             toast.success("Request berhasil ditambahkan")
             form.reset()
             setOpen(false)
+            onSuccess?.()
         } catch (error) {
             toast.error("Terjadi kesalahan sistem")
             console.error(error)

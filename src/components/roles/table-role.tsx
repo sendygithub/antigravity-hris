@@ -37,7 +37,7 @@ interface DataTableProps<TData, TValue> {
     data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function TableRole<TData, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
@@ -215,3 +215,5 @@ export function DataTable<TData, TValue>({
         </div>
     )
 }
+
+export default TableRole;

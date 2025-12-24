@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Building, Plus } from "lucide-react"
+import { Building} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -35,7 +35,7 @@ name: z.string().min(2).trim(),
 
 })
 
-export function AddDepartmentDialog() {
+export function AddDepartmentDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -62,6 +62,7 @@ export function AddDepartmentDialog() {
             
             form.reset()
             setOpen(false)
+            onSuccess?.()
         } catch (error) {
             toast.error("An unexpected error occurred.")
             console.error(error)
@@ -70,15 +71,15 @@ export function AddDepartmentDialog() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Card className="flex flex-col items-center justify-center border-dashed cursor-pointer hover:bg-muted/50 transition-colors py-12 h-full">
-                    <div className="rounded-full bg-primary/10 p-4 mb-4">
+            <DialogTrigger asChild className="flex">
+                <Card className="  hover:bg-muted/50 transition-colors items-right">
+                 <h3 className="font-semibold text-lg">Add Department</h3>
                         <Building className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-lg">Add Department</h3>
-                    <p className="text-sm text-muted-foreground">Create a new department</p>
+                   
                 </Card>
             </DialogTrigger>
+
+            
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Add Department</DialogTitle>

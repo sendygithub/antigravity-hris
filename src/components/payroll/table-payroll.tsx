@@ -37,7 +37,7 @@ interface DataTableProps<TData, TValue> {
     data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function TablePayroll<TData, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center py-4">
                                 {/* INPUT FILTER EMAIL */}
                 <Input
-                    placeholder="Filter emails..."
+                    placeholder="Filter employee..."
                     value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
                         table.getColumn("email")?.setFilterValue(event.target.value)

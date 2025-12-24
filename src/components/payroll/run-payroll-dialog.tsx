@@ -34,6 +34,7 @@ import {
 import { toast } from "sonner"
 import { Input } from "../ui/input"
 
+
 const formSchema = z.object({
     employeeId: z.string().min(1, "Please select a month"),
     status: z.string().min(4, "Please select a year"),
@@ -41,7 +42,7 @@ const formSchema = z.object({
     salary: z.string().min(1, "Please enter a salary amount"),
 })
 
-export function RunPayrollDialog() {
+export function RunPayrollDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -77,6 +78,7 @@ export function RunPayrollDialog() {
             toast.success("salary berhasil ditambahkan")
             form.reset()
             setOpen(false)
+            onSuccess?.()
         } catch (error) {
 
              toast.error("Terjadi kesalahan sistem")
@@ -109,7 +111,7 @@ export function RunPayrollDialog() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>ID Employee</FormLabel>
-                                        <FormControl><Input type="number" placeholder="John Doe" {...field} /></FormControl>
+                                        <FormControl><Input type="number" placeholder="1,2,3" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}

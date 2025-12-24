@@ -1,52 +1,93 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Briefcase, Building } from "lucide-react";
+"use client";
+
+
 import { AddDepartmentDialog } from "@/components/departments/add-department-dialog";
-
-const departments = [
-    { name: "Engineering", head: "Michael Chen", employees: 12, budget: "$450,000" },
-    { name: "Design", head: "Sarah Miller", employees: 6, budget: "$180,000" },
-    { name: "Human Resources", head: "Jessica Davis", employees: 3, budget: "$90,000" },
-    { name: "Marketing", head: "David Wilson", employees: 5, budget: "$150,000" },
-];
-
+import { TableDepartment } from "@/components/departments/table-departmen";
+import { ColumnDef } from "@tanstack/react-table"
+import {  useEffect } from "react";
+import * as React from "react";
+import { Employee } from "../../../generated/prisma";
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash } from "lucide-react"
 export const dynamic = 'force-dynamic';
+const datadepartments : ColumnDef<Employee>[] = [
+  {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            const task = row.original
+
+            return (
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {  }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => { }}
+                    >
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                </div>
+            )
+        },
+    },
+]
+
 
 export default function DepartmentsPage() {
+
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+
+
+    const fetchDepartments = async () => {
+          try {
+            const res = await fetch("/api/departments");
+            if (!res.ok) throw new Error("Failed to fetch")
+            const result = await res.json()
+            setData(result)
+          } catch (error) {
+            console.error(error)
+          } finally {
+            setLoading(false)
+          }
+        }
+      
+    
+      useEffect(() => {
+        fetchDepartments()
+      }, [])
+    
+      if (loading) return <p>Loading Data Department...</p>
+
     return (
-        <div className="space-y-6">
+        <div className="p-1">
+        <div className=" flex items-center justify-between">
             <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {departments.map((dept, i) => (
-                    <Card key={i} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-xl font-bold">{dept.name}</CardTitle>
-                            <Building className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mt-4 space-y-3">
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                    <Users className="mr-2 h-4 w-4" />
-                                    {dept.employees} Employees
-                                </div>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                    <Briefcase className="mr-2 h-4 w-4" />
-                                    Head: {dept.head}
-                                </div>
-                                <div className="pt-4 border-t mt-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-medium">Budget</span>
-                                        <span className="text-sm font-bold">{dept.budget}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-
-                {/* Add New Department Card (Placeholder) */}
-                <AddDepartmentDialog />
-            </div>
+            <AddDepartmentDialog onSuccess= {fetchDepartments} />
+        </div>
+         <div className="p-8">
+                <TableDepartment columns={datadepartments} data={data} />
+                </div>
         </div>
     );
 }

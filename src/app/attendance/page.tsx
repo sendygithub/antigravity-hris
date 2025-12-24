@@ -1,27 +1,71 @@
+"use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AddAttendanceDialog } from "@/components/attendance/add-attendance-dialog";
+import { TableAttendance } from "@/components/attendance/table-attendance";
+import { ColumnDef } from "@tanstack/react-table"
+import { Attendance } from "../../../generated/prisma";
+import * as React from "react";
+import {  useEffect } from "react";
 
-const attendanceData = [
-    { id: 1, name: "Sarah Miller", time: "08:55 AM", status: "Present", department: "Design" },
-    { id: 2, name: "Michael Chen", time: "09:02 AM", status: "Late", department: "Engineering" },
-    { id: 3, name: "David Wilson", time: "08:45 AM", status: "Present", department: "Engineering" },
-    { id: 4, name: "Jessica Davis", time: "-", status: "Absent", department: "HR" },
-    { id: 5, name: "Emily Taylor", time: "-", status: "On Leave", department: "Marketing" },
-];
+
+
+const attendanceData: ColumnDef<Attendance>[] = [
+    {
+        accessorKey: "id",
+        header: "ID",
+    },
+    {
+        accessorKey: "date",
+        header: "Date",
+    },
+    {
+        accessorKey: "employeeId",
+        header: "Employee ID",
+    },
+    {
+        accessorKey: "checkIn",
+        header: "check In",
+    },
+    {
+        accessorKey: "checkOut",
+        header: "check Out",
+    },
+    {
+        accessorKey: "status",
+        header: "Status",
+    }
+]
 
 export default function AttendancePage() {
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+
+    const fetchAttendance = async () => {
+         setLoading(true) 
+        try {
+            const res = await fetch("/api/attendance");
+            if (!res.ok) throw new Error("Failed to fetch")
+            const result = await res.json()
+            setData(result)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchAttendance();
+    }, []);
+
+    if (loading) return <p>Loading Attendance Data...</p>
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between"> 
-
                 <h1 className="text-3xl font-bold tracking-tight">Attendance</h1>
-            <AddAttendanceDialog/>
-
+            <AddAttendanceDialog onSuccess={fetchAttendance}/>
             </div>
-            
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
@@ -58,48 +102,14 @@ export default function AttendancePage() {
                 </Card>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Daily Attendance Log</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Employee</TableHead>
-                                <TableHead>Department</TableHead>
-                                <TableHead>Check In</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {attendanceData.map((record) => (
-                                <TableRow key={record.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarFallback>{record.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                            </Avatar>
-                                            {record.name}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{record.department}</TableCell>
-                                    <TableCell>{record.time}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            record.status === "Present" ? "default" :
-                                                record.status === "Late" ? "secondary" :
-                                                    "destructive"
-                                        }>
-                                            {record.status}
-                                        </Badge>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between space-y-2">
+                    <h2 className="text-2xl font-bold tracking-tight">Attendance Records</h2>
+                </div>
+                <div className="space-y-1">
+                    <TableAttendance columns={attendanceData} data={data} />
+                </div>
+            </div>
         </div>
     );
 }

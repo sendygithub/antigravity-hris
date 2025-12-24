@@ -39,7 +39,7 @@ const formSchema = z.object({
 
 })
 
-export function AddAttendanceDialog() {
+export function AddAttendanceDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -72,12 +72,13 @@ export function AddAttendanceDialog() {
             })
             const data = await res.json()
             if (!res.ok) {
-                toast.error(data.message || "Failed to create department")
+                toast.error(data.message || "Failed to create attendance")
             }
-            toast.success("Department created successfully")
+            toast.success("New attendance created successfully")
             
             form.reset()
             setOpen(false)
+            onSuccess?.()
         } catch (error) {
             toast.error("An unexpected error occurred.")
             console.error(error)

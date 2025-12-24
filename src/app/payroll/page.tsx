@@ -1,27 +1,99 @@
+"use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
+
 import { RunPayrollDialog } from "@/components/payroll/run-payroll-dialog";
 import { ExportPayrollDialog } from "@/components/payroll/export-payroll-dialog";
-import { ViewSlipDialog } from "@/components/payroll/view-slip-dialog";
 
-const payrollData = [
-    { id: 1, name: "Sarah Miller", salary: "$5,800", status: "Paid", date: "Oct 30, 2023" },
-    { id: 2, name: "Michael Chen", salary: "$5,200", status: "Paid", date: "Oct 30, 2023" },
-    { id: 3, name: "David Wilson", salary: "$5,500", status: "Processing", date: "Nov 30, 2023" },
-    { id: 4, name: "Jessica Davis", salary: "$4,900", status: "Pending", date: "Nov 30, 2023" },
-];
+import { TablePayroll } from "@/components/payroll/table-payroll";
+import { ColumnDef } from "@tanstack/react-table"
+import { Payroll } from "../../../generated/prisma";
+import * as React from "react";
+import {  useEffect } from "react";
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash } from "lucide-react"
+
+export const dynamic = 'force-dynamic';
+const datapayrol: ColumnDef<Payroll>[] = [
+    {
+        accessorKey: "id",
+        header: "ID",
+    },
+    {
+        accessorKey: "salary",
+        header: "Salary",
+    },
+    {
+        accessorKey: "status",
+        header: "Status",
+    },
+    {
+        accessorKey: "paymentDate",
+        header: "Pay Date",
+    },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            const task = row.original
+
+            return (
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {  }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => { }}
+                    >
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                </div>
+            )
+        },
+    },
+]
+
+
 
 export default function PayrollPage() {
+
+const [data, setData] = React.useState([]);
+const [loading, setLoading] = React.useState(true);
+
+const fetchPayroll = async () => {
+     setLoading(true) 
+    try {
+        const res = await fetch("/api/payroll");
+        if (!res.ok) throw new Error("Failed to fetch")
+        const result = await res.json()
+        setData(result)
+    } catch (error) {
+        console.error(error)    
+    } finally {
+        setLoading(false)
+    }
+}
+
+
+    useEffect(() => {
+        fetchPayroll()
+      }, [])
+    
+      if (loading) return <p>Loading Data Payroll...</p>
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Payroll</h1>
                 <div className="flex gap-2">
                     <ExportPayrollDialog />
-                    <RunPayrollDialog />
+                    <RunPayrollDialog onSuccess={fetchPayroll} />
                 </div>
             </div>
 
@@ -53,45 +125,9 @@ export default function PayrollPage() {
                 </Card>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Salary History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Employee</TableHead>
-                                <TableHead>Payment Date</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {payrollData.map((record) => (
-                                <TableRow key={record.id}>
-                                    <TableCell className="font-medium">{record.name}</TableCell>
-                                    <TableCell>{record.date}</TableCell>
-                                    <TableCell>{record.salary}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            record.status === "Paid" ? "default" :
-                                                record.status === "Processing" ? "secondary" :
-                                                    "outline"
-                                        }>
-                                            {record.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <ViewSlipDialog record={record} />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            <div className="p-8">
+                <TablePayroll columns={datapayrol} data={data} />
+                </div>
         </div>
     );
 }

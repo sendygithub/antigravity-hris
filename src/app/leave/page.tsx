@@ -1,55 +1,107 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Plus } from "lucide-react";
-
-const leaveRequests = [
-    { id: 1, name: "Jessica Davis", type: "Sick Leave", dates: "Nov 30 - Dec 2", status: "Pending", reason: "Fever and flu" },
-    { id: 2, name: "Michael Chen", type: "Annual Leave", dates: "Dec 15 - Dec 20", status: "Approved", reason: "Family vacation" },
-    { id: 3, name: "Sarah Miller", type: "Personal Leave", dates: "Dec 1", status: "Rejected", reason: "Important meeting scheduled" },
-];
-
+"use client"
 import { RequestLeaveDialog } from "@/components/leave/request-leave-dialog";
+import { Tableleave } from "@/components/leave/data-table";
+import { useEffect } from "react";
+import * as React from "react";
+import { ColumnDef } from "@tanstack/react-table"
+import { LeaveRequest } from "../../../generated/prisma";
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash } from "lucide-react"
+export const dynamic = 'force-dynamic';
+const dataleave : ColumnDef<LeaveRequest>[]  = [
+    {
+        accessorKey: "id",  
+        header: "ID",
+    },
+    {
+        accessorKey: "employeeId",
+        header: "Employee ID",
+    },      
+    {
+        accessorKey: "type",
+        header: "Leave Type",       
+    },
+    {
+        accessorKey: "startDate",
+        header: "Start Date",       
+    },
+    {
+        accessorKey: "endDate",
+        header: "End Date",       
+    },
+    {
+        accessorKey: "status",
+        header: "Status",       
+    },  
+    {
+        accessorKey: "reason",
+        header: "Reason",       
+    },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            const task = row.original
 
+            return (
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {  }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => { }}
+                    >
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                </div>
+            )
+        },
+    },
+]
 export default function LeavePage() {
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+
+    const fetchLeave = async () => {
+         setLoading(true) 
+        try {
+            const res = await fetch("/api/leave");
+            if (!res.ok) throw new Error("Failed to fetch")
+            const result = await res.json()
+            setData(result)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchLeave();
+    }, []);
+
+    if (loading) return <p>Loading Data...</p>
+
+
+
+
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Leave Management</h1>
-                <RequestLeaveDialog />
+                <RequestLeaveDialog onSuccess={() => fetchLeave()} />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {leaveRequests.map((req) => (
-                    <Card key={req.id}>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <Badge variant={req.status === "Approved" ? "default" : req.status === "Pending" ? "secondary" : "destructive"}>
-                                    {req.status}
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">{req.type}</span>
-                            </div>
-                            <CardTitle className="mt-2 text-lg">{req.name}</CardTitle>
-                            <CardDescription className="flex items-center gap-1">
-                                <CalendarIcon className="h-3 w-3" /> {req.dates}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground mb-4">"{req.reason}"</p>
-                            <div className="flex gap-2">
-                                {req.status === "Pending" && (
-                                    <>
-                                        <Button variant="default" size="sm" className="w-full">Approve</Button>
-                                        <Button variant="outline" size="sm" className="w-full">Reject</Button>
-                                    </>
-                                )}
-                                {req.status !== "Pending" && (
-                                    <Button variant="outline" size="sm" className="w-full" disabled>Processed</Button>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+            <div className="w-full">
+               <Tableleave columns={dataleave} data={data} />
             </div>
         </div>
     );

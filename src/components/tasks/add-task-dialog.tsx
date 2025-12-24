@@ -41,18 +41,18 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { id } from "date-fns/locale"
 
 const formSchema = z.object({
+    
+    assigneeId: z.string().min(1, "Please select employee"),
     title: z.string().min(2, "Title is required"),
-    assignee: z.string().min(1, "Assignee is required"),
     status: z.string().min(1, "Status is required"),
     priority: z.string().min(1, "Priority is required"),
     id: z.string().optional(),
     dueDate: z.date(),
 })
 
-export function AddTaskDialog() {
+export function AddTaskDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -61,7 +61,7 @@ export function AddTaskDialog() {
             priority: "",
             status: "",
             dueDate: new Date(),
-            assignee: "",
+            assigneeId: "",
             id: "",
             
         },
@@ -69,21 +69,33 @@ export function AddTaskDialog() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
          try {
+
+            const payload = {
+                ...values,
+                
+                assigneeId: parseInt(values.assigneeId),
+                dueDate: new Date(values.dueDate).toISOString(),
+            }
+
+
+
+
             const res =await fetch("/api/tasks", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(values),
+            body: JSON.stringify(payload),
         })
             const data = await res.json()
             if (!res.ok) {
                 toast.error(data.message || "Failed to create role")
             }
-            toast.success("Role created successfully")
+            toast.success("task created successfully")
 
             form.reset()
             setOpen(false)
+            onSuccess?.()
         } catch (error) {
             toast.error("An unexpected error occurred.")
             console.error(error)
@@ -122,7 +134,7 @@ export function AddTaskDialog() {
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}
-                                name="assignee"
+                                name="assigneeId"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Assignee</FormLabel>

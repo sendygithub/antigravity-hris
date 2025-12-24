@@ -1,17 +1,100 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus, Shield, Users } from "lucide-react";
-
-const roles = [
-    { title: "Administrator", users: 2, description: "Full access to all resources and settings." },
-    { title: "HR Manager", users: 5, description: "Can manage employees, attendance, payroll, and leave." },
-    { title: "Department Head", users: 8, description: "Can manage tasks and view department attendance." },
-    { title: "Employee", users: 110, description: "Can view own data, request leave, and manage tasks." },
-];
-
+"use client";
+import * as React from "react";
+import { TableRole } from "@/components/roles/table-role";
 import { CreateRoleDialog } from "@/components/roles/create-role-dialog";
+import { ColumnDef } from "@tanstack/react-table";
+import { useEffect } from "react";
+import { Role } from "../../../generated/prisma";
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash } from "lucide-react"
 
+export const dynamic = 'force-dynamic';
+// Tipe data role
+
+
+const dataroles: ColumnDef<Role>[] = [
+    {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    accessorKey: "permissions",
+    header: "Permissions",
+  },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            const task = row.original
+
+          function fetchroles() {
+            throw new Error("Function not implemented.");
+          }
+
+            return (
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={async() => {
+                          
+                        }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        
+                        onClick={async() => {
+                          const res = await fetch(`/api/role/${task.id}`, { method: "DELETE" });
+
+                          if (res.ok) {
+                            fetchroles();
+                          }
+                        }}
+                    >
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                </div>
+            )
+        },
+    },
+]
 export default function RolesPage() {
+
+      const [data, setData] = React.useState([]);
+        const [loading, setLoading] = React.useState(true);
+    
+    const fetchroles = async () => {
+          try {
+            const res = await fetch("/api/role");
+            if (!res.ok) throw new Error("Failed to fetch")
+            const result = await res.json()
+            setData(result)
+          } catch (error) {
+            console.error(error)
+          } finally {
+            setLoading(false)
+          }
+        }
+
+
+        useEffect(() => {
+                fetchroles()
+              }, [])
+            
+              if (loading) return <p>Loading Data Roles...</p>
+    
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -19,26 +102,8 @@ export default function RolesPage() {
                 <CreateRoleDialog />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {roles.map((role, i) => (
-                    <Card key={i}>
-                        <CardHeader>
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                                    <Shield className="h-5 w-5" />
-                                </div>
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                    <Users className="mr-1 h-3 w-3" /> {role.users}
-                                </div>
-                            </div>
-                            <CardTitle>{role.title}</CardTitle>
-                            <CardDescription>{role.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button variant="outline" className="w-full">Edit Permissions</Button>
-                        </CardContent>
-                    </Card>
-                ))}
+            <div className="p-8">
+                <TableRole columns={dataroles} data={data} />
             </div>
         </div>
     );
