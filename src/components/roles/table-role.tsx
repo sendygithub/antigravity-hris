@@ -76,12 +76,12 @@ export function TableRole<TData, TValue>({
     return (
         <div className="w-full">
             <div className="flex items-center py-4">
-                                {/* INPUT FILTER EMAIL */}
+                                {/* INPUT FILTER TITLE */}
                 <Input
-                    placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+                    placeholder="Filter title..."
+                    value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
+                        table.getColumn("title")?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />

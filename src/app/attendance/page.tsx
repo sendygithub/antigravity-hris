@@ -5,6 +5,8 @@ import { TableAttendance } from "@/components/attendance/table-attendance";
 import { ColumnDef } from "@tanstack/react-table"
 import { Attendance } from "../../../generated/prisma";
 import * as React from "react";
+import { Button } from "@/components/ui/button"
+import { Pencil, Trash } from "lucide-react"
 import {  useEffect } from "react";
 
 
@@ -33,7 +35,34 @@ const attendanceData: ColumnDef<Attendance>[] = [
     {
         accessorKey: "status",
         header: "Status",
-    }
+    },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+            const task = row.original
+
+            return (
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {  }}
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => { }}
+                    >
+                        <Trash className="h-4 w-4" />
+                    </Button>
+                </div>
+            )
+        },
+    },
 ]
 
 export default function AttendancePage() {

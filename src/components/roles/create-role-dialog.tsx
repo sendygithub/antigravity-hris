@@ -35,10 +35,11 @@ const formSchema = z.object({
     permissions: z.string().min(10, "Description must be at least 10 characters")
 })
 
-export function CreateRoleDialog() {
+export function CreateRoleDialog({onSuccess}: {onSuccess: () => void}) {
     const [open, setOpen] = useState(false)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
+        mode: "onChange",
         defaultValues: {
             title: "",
             description: "",
@@ -60,6 +61,7 @@ export function CreateRoleDialog() {
                 toast.error(data.message || "Failed to create role")
             }
             toast.success("Role created successfully")
+            onSuccess?.()
 
             form.reset()
             setOpen(false)
@@ -90,13 +92,13 @@ export function CreateRoleDialog() {
                         <FormField
                             control={form.control}
                             name="title"
-                            render={({ field }) => (
+                            render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormLabel>Role Title</FormLabel>
                                     <FormControl>
                                         <Input placeholder="e.g. Senior Developer" {...field} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage>{fieldState?.error?.message}</FormMessage>
                                 </FormItem>
                             )}
                         />
@@ -139,14 +141,9 @@ export function CreateRoleDialog() {
                         <DialogFooter>
                             <Button type="submit">Create Role</Button>
                         </DialogFooter>
-                    
                 </form>
                 </Form>
-                
             </DialogContent>
         </Dialog>
-
-       
-        
     )
 }

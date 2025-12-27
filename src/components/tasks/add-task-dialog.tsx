@@ -77,9 +77,6 @@ export function AddTaskDialog({ onSuccess }: { onSuccess?: () => void }) {
                 dueDate: new Date(values.dueDate).toISOString(),
             }
 
-
-
-
             const res =await fetch("/api/tasks", {
             method: "POST",
             headers: {

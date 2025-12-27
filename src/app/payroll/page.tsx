@@ -34,7 +34,7 @@ const datapayrol: ColumnDef<Payroll>[] = [
         id: "actions",
         header: "Actions",
         cell: ({ row }) => {
-            const task = row.original
+           
 
             return (
                 <div className="flex gap-2">

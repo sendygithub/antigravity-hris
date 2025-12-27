@@ -38,17 +38,14 @@ const formSchema = z.object({
     Name: z.string().min(2, "Nama minimal 2 karakter"),
     email: z.string().email("Email tidak valid"),
     status: z.string().min(1, "Status wajib diisi"),
-    // Mengubah string dari input date menjadi Date Object
     hiredDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
     joinedDate: z.string().min(1, "Tanggal bergabung wajib diisi"),
-    // Kirim ID sebagai angka sesuai schema Prisma
     roleId: z.string().min(1, "Role wajib dipilih"),
     departmentId: z.string().min(1, "Department wajib dipilih"),
 })
 
 export function AddEmployeeDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
-
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
