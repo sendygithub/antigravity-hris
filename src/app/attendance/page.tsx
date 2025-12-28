@@ -10,6 +10,14 @@ import { Pencil, Trash } from "lucide-react"
 import {  useEffect } from "react";
 
 
+// =================konversi iso date ke indonesia  =================
+export function formatTanggalID(date: string | Date) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
 
 const attendanceData: ColumnDef<Attendance>[] = [
     {
@@ -19,6 +27,8 @@ const attendanceData: ColumnDef<Attendance>[] = [
     {
         accessorKey: "date",
         header: "Date",
+        cell: ({ row }) =>
+            formatTanggalID(row.getValue("date")),
     },
     {
         accessorKey: "employeeId",
@@ -27,10 +37,14 @@ const attendanceData: ColumnDef<Attendance>[] = [
     {
         accessorKey: "checkIn",
         header: "check In",
+        cell: ({ row }) =>
+            formatTanggalID(row.getValue("checkIn")),
     },
     {
         accessorKey: "checkOut",
         header: "check Out",
+        cell: ({ row }) =>
+            formatTanggalID(row.getValue("checkOut")),
     },
     {
         accessorKey: "status",

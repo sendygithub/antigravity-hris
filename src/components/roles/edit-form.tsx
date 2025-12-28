@@ -45,7 +45,7 @@ type EditRoleDialogProps = {
     description: string
     permissions: string
   }
-  onSuccess: () => void // callback untuk refresh tabel
+  onSuccess: () => void 
 }
                                        // 3. form utama EditRoleDialog
 export function EditRoleDialog({ role, onSuccess }: EditRoleDialogProps) {

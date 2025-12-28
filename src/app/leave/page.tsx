@@ -8,6 +8,15 @@ import { LeaveRequest } from "../../../generated/prisma";
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash } from "lucide-react"
 export const dynamic = 'force-dynamic';
+
+// =================konversi iso date ke indonesia  =================
+export function formatTanggalID(date: string | Date) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
 const dataleave : ColumnDef<LeaveRequest>[]  = [
     {
         accessorKey: "id",  
@@ -23,11 +32,17 @@ const dataleave : ColumnDef<LeaveRequest>[]  = [
     },
     {
         accessorKey: "startDate",
-        header: "Start Date",       
+        header: "Start Date",
+        cell: ({ row }) => {
+            return formatTanggalID(row.getValue("startDate"));
+        }       
     },
     {
         accessorKey: "endDate",
         header: "End Date",       
+        cell: ({ row }) => {
+            return formatTanggalID(row.getValue("endDate"));
+        }
     },
     {
         accessorKey: "status",
