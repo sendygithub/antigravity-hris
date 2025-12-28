@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {  Plus } from "lucide-react"
-
-
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -35,10 +33,18 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Input } from "../ui/input"
+import { useEffect } from "react"
+import { employees } from "@/lib/mock-data"
 
+type employee = {
+    id: number
+    Name:  string
+}
+
+// 1. deklarasi schema validasi dengan zod
 
 const formSchema = z.object({
-    employeeId: z.string().min(1, "Please select employee"),
+    employeeId: z.number().min(1, "Please select employee"),
     type: z.string().min(1, "Please select leave type"),
     startDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
     endDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
@@ -49,6 +55,30 @@ const formSchema = z.object({
 
 export function RequestLeaveDialog({ onSuccess }: { onSuccess?: () => void }) {
     const [open, setOpen] = useState(false)
+    const [employees, setEmployees] = useState<employee[]>([])
+    const [loadingemployees, setLoadingemployees] = useState(true)
+
+    // FETCH EMPLOYEES
+    useEffect(() => {
+        async function fetchEmployees() {
+            try {
+                const res = await fetch("/api/employees?select=id,name")
+                if (!res.ok) throw new Error("Failed to fetch")
+                const result = await res.json()
+                setEmployees(result)
+            } catch (error) {
+               toast.error("Gagal memuat daftar employees")
+               console.error(error)
+            } finally {
+                setLoadingemployees(false)
+            }
+            
+        }
+        fetchEmployees()
+    }, [])
+  
+    // 2. deklarasi form dan onSubmit function
+          
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -56,7 +86,7 @@ export function RequestLeaveDialog({ onSuccess }: { onSuccess?: () => void }) {
             reason: "",
             startDate:new Date().toISOString().split('T')[0],
             endDate: new Date().toISOString().split('T')[0],
-            employeeId: "",
+            employeeId: 0,
             status: "Pending",
         },
     })
@@ -69,7 +99,7 @@ export function RequestLeaveDialog({ onSuccess }: { onSuccess?: () => void }) {
 
             const payload = {
                 ...values,
-                employeeId: parseInt(values.employeeId), 
+                 
                 startDate: new Date(values.startDate).toISOString(),
                 endDate: new Date(values.endDate).toISOString(),
             }
@@ -95,7 +125,7 @@ export function RequestLeaveDialog({ onSuccess }: { onSuccess?: () => void }) {
             console.error(error)
         }
     }
-    
+
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -111,27 +141,46 @@ export function RequestLeaveDialog({ onSuccess }: { onSuccess?: () => void }) {
                         Submit a new leave request for approval.
                     </DialogDescription>
                 </DialogHeader>
+
+
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
 
-                    <FormField
-                            control={form.control}
-                            name="employeeId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Select employee</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormField
+                                control={form.control}
+                                name="employeeId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Employee</FormLabel>
+                                    {!loadingemployees ? (
+                                        <Select
+                                        onValueChange={(val) => field.onChange(Number(val))}
+                                        value={field.value?.toString()}
+                                        >
                                         <FormControl>
-                                        
+                                            <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Pilih employee..." />
+                                            </SelectTrigger>
                                         </FormControl>
-                                        <Input placeholder="Employee ID" {...field} />
-                                        
-                                    </Select>
+                                        <SelectContent>
+                                            {employees.map((employee) => (
+                                            <SelectItem key={employee.id} value={employee.id.toString()}>
+                                                {employee.Name}
+                                            </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <div className="h-10 border rounded-md px-3 py-2 text-sm opacity-50">
+                                        Memuat Employees...
+                                        </div>
+                                    )}
+                                    
                                     <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                    </FormItem>
+                                )}
+                                />
 
                         <FormField
                             control={form.control}

@@ -7,7 +7,18 @@ import { AddTaskDialog } from "@/components/tasks/add-task-dialog";
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash } from "lucide-react"
 import * as React from "react";
+import { EditTaskDialog } from "@/components/leave/edit-form";
 
+
+
+// =================konversi iso date ke indonesia  =================
+export function formatTanggalID(date: string | Date) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
 export const dynamic = 'force-dynamic';
 const dataTask: ColumnDef<Task>[] = [
     {
@@ -28,7 +39,9 @@ const dataTask: ColumnDef<Task>[] = [
     },
     {
         accessorKey: "dueDate",
-        header: "Due Date"
+        header: "Due Date",
+        cell: ({ row }) =>
+            formatTanggalID(row.getValue("dueDate")),
     },
     {
         accessorKey: "status",
@@ -42,13 +55,7 @@ const dataTask: ColumnDef<Task>[] = [
 
             return (
                 <div className="flex gap-2">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {  }}
-                    >
-                        <Pencil className="h-4 w-4" />
-                    </Button>
+                    <EditTaskDialog task={task} onSuccess={() => {}}/>
 
                     <Button
                         size="sm"
