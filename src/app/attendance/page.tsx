@@ -8,6 +8,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash } from "lucide-react"
 import {  useEffect } from "react";
+import EditAttendanceDialog from "@/components/attendance/edit-attendance";
 
 
 // =================konversi iso date ke indonesia  =================
@@ -58,13 +59,7 @@ const attendanceData: ColumnDef<Attendance>[] = [
 
             return (
                 <div className="flex gap-2">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {  }}
-                    >
-                        <Pencil className="h-4 w-4" />
-                    </Button>
+                    <EditAttendanceDialog attendance={task} onSuccess={() => {}} />
 
                     <Button
                         size="sm"

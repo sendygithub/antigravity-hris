@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,7 +18,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -34,25 +32,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 
                                         // 1. deklarasi schema validasi dengan zod
-const editLeaveSchema = z.object({
- employeeId: z.number().min(1, "Please select employee"),
-     type: z.string().min(1, "Please select leave type"),
-     startDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
-     endDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
-     reason: z.string().min(5, "Reason is required"),
+const editPayrollSchema = z.object({
+     employeeId: z.number().min(1, "Please select employee"),
+     salary: z.coerce.number().min(1, "Salary wajib diisi"),
+     payDate: z.string().min(1, "Tanggal rekrut wajib diisi"),
      status: z.string().optional(),
   
 })
-                                // 2. deklarasi props untuk komponen EditLeaveDialog
-type EditLeaveDialogProps = {
-  leave: {
+                                // 2. deklarasi props untuk komponen EditPayrollDialog
+type EditPayrollDialogProps = {
+  payroll: {
     id: number
     employeeId: number
-    type: string
-    startDate: string
-    endDate: string
+    salary: number
+    payDate: string
     status: string
-    reason: string
     
     
   }
@@ -66,8 +60,8 @@ type Employee = {
 }
 
 
-                                       // 3. form utama EditLeaveDialog
-export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
+                                       // 3. form utama EditPayrollDialog
+export function EditPayrollDialog({ payroll, onSuccess }: EditPayrollDialogProps) {
   const [open, setOpen] = useState(false)
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loadingEmployees, setLoadingEmployees] = useState(true)
@@ -90,24 +84,21 @@ export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
   }, [])
 
 
-  const form = useForm<z.infer<typeof editLeaveSchema>>({
-    resolver: zodResolver(editLeaveSchema),
+  const form = useForm<z.infer<typeof editPayrollSchema>>({
+    resolver: zodResolver(editPayrollSchema),
     defaultValues: {
       
-      employeeId: leave.employeeId,
-      type: leave.type,
-      startDate: leave.startDate,
-      endDate: leave.endDate,
-      status: leave.status,
-      reason: leave.reason
-      
-      
+      employeeId: payroll.employeeId,
+      salary: payroll.salary,
+      payDate: payroll.payDate,
+      status: payroll.status,
+
     }
   })
                                        // 4. coding simpan data hasil edit
-  const onSubmit = async (values: z.infer<typeof editLeaveSchema>) => {
+  const onSubmit = async (values: z.infer<typeof editPayrollSchema>) => {
     try {
-      const res = await fetch(`/api/leave/${leave.id}`, {
+      const res = await fetch(`/api/payroll/${payroll.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values)
@@ -141,8 +132,8 @@ export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Leave</DialogTitle>
-          <DialogDescription>Edit the leave and its details.</DialogDescription>
+          <DialogTitle>Edit Payroll</DialogTitle>
+          <DialogDescription>Edit the payroll and its details.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -195,7 +186,7 @@ export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
                 <FormItem>
                   <FormLabel>Status</FormLabel>
                   <FormControl>
-                    <Input type="text"{...field} />
+                    <Input type="text" {...field} />
                   </FormControl>
                   <FormMessage>{fieldState?.error?.message}</FormMessage>
                 </FormItem>
@@ -204,10 +195,10 @@ export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
 
             <FormField
               control={form.control}
-              name="startDate"
+              name="payDate"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <FormLabel>startDate</FormLabel>
+                  <FormLabel>Pay Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -217,38 +208,31 @@ export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
             />
                   
 
-            </div>
-
            
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-              control={form.control}
-              name="endDate"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>endDate</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
+
 
             <FormField
-              control={form.control}
-              name="reason"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Reason</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
+  control={form.control}
+  name="salary"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Salary</FormLabel>
+      <FormControl>
+        <Input
+          type="number"
+          value={field.value ?? ""}
+          onChange={(e) =>
+            field.onChange(
+              e.target.value === "" ? "" : Number(e.target.value)
+            )
+          }
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
             </div>
 
 
@@ -269,4 +253,4 @@ export function EditLeaveDialog({ leave, onSuccess }: EditLeaveDialogProps) {
 }
 
 
-export default EditLeaveDialog
+export default EditPayrollDialog

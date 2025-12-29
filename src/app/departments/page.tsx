@@ -16,7 +16,6 @@ export const dynamic = 'force-dynamic';
 
 
 
-
 export default function DepartmentsPage() {
  // ================= STATE =================
     const [data, setData] = React.useState([]);

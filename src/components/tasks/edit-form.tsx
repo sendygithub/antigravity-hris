@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import * as React from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -19,145 +20,108 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 import { toast } from "sonner"
-import { Employee } from "@prisma/client"
-import { useEffect } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
-
-
-
-                                        // 1. deklarasi schema validasi dengan zod
-const editEmployeeSchema = z.object({
-  Name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().min(5, "Email must be at least 5 characters").email("Invalid email address"),
-  status: z.string().min(2, "Status must be at least 2 characters"),
-  roleId: z.number().int().min(1),
-  departmentId: z.number().int().min(1),
-  hiredDate: z.string().min(10, "Hire Date must be at least 10 characters"),
-  joinedDate: z.string().min(10, "Joined Date must be at least 10 characters"),
-  
+/* ================= SCHEMA ================= */
+const editTaskSchema = z.object({
+  title: z.string().min(2, "Title minimal 2 karakter"),
+  assigneeId: z.number().min(1, "Pilih assignee"),
+  priority: z.string().min(1, "Priority wajib diisi"),
+  status: z.string().min(1, "Status wajib diisi"),
+  dueDate: z.string().min(1, "Tanggal wajib diisi"),
 })
-                                // 2. deklarasi props untuk komponen EditEmployeeDialog
-type EditEmployeeDialogProps = {
-  employee: {
+
+/* ================= TYPES ================= */
+type EditTaskDialogProps = {
+  task: {
     id: number
-    Name: string
-    email: string
+    title: string
+    priority: string
     status: string
-    roleId: number
-    departmentId: number
-    hiredDate: string
-    joinedDate: string
-    
+    dueDate: string
+    assigneeId: number
   }
-  onSuccess: () => void 
-}
-type Role = {
-  id: number
-  title: string
-  description?: string
-  // ... field lain jika perlu
+  onSuccess: () => void
 }
 
-type Department = {
+type Employee = {
   id: number
-  name: string
-  description?: string
-  // ... field lain jika perlu
+  Name: string
 }
 
-                                       // 3. form utama EditTaskDialog
-export function EditTaskDialog({ employee, onSuccess }: EditEmployeeDialogProps) {
+/* ================= COMPONENT ================= */
+export function EditTaskDialog({ task, onSuccess }: EditTaskDialogProps) {
   const [open, setOpen] = useState(false)
-  const [roles, setRoles] = useState<Role[]>([])
-  const [loadingRoles, setLoadingRoles] = useState(true)
-  const [departments, setDepartments] = useState<Department[]>([])
-  const [loadingDepartments, setLoadingDepartments] = useState(true)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loadingEmployees, setLoadingEmployees] = useState(true)
 
+  /* ================= FETCH EMPLOYEES ================= */
   useEffect(() => {
-    async function fetchRoles() {
+    const fetchEmployees = async () => {
       try {
-        const res = await fetch('/api/role?select=id,title')
+        const res = await fetch("/api/employees")
         if (!res.ok) throw new Error()
         const data = await res.json()
-        setRoles(data)
-      } catch (err) {
-        toast.error("Gagal memuat daftar role")
+        setEmployees(data)
+      } catch {
+        toast.error("Gagal memuat data employee")
       } finally {
-        setLoadingRoles(false)
+        setLoadingEmployees(false)
       }
     }
-    fetchRoles()
+
+    fetchEmployees()
   }, [])
 
-  useEffect(() => {
-    async function fetchDepartments() {
-      try {
-        const res = await fetch('/api/departments?select=id,name')
-        if (!res.ok) throw new Error()
-        const data = await res.json()
-        setDepartments(data)
-      } catch (err) {
-        toast.error("Gagal memuat daftar departemen")
-      } finally {
-        setLoadingDepartments(false)
-      }
-    }
-    fetchDepartments()
-  }, [])
-
-
-  const form = useForm<z.infer<typeof editEmployeeSchema>>({
-    resolver: zodResolver(editEmployeeSchema),
+  /* ================= FORM ================= */
+  const form = useForm<z.infer<typeof editTaskSchema>>({
+    resolver: zodResolver(editTaskSchema),
     defaultValues: {
-      
-      Name: employee.Name,
-      email: employee.email,
-      status: employee.status,
-      roleId: employee.roleId,
-      departmentId: employee.departmentId,
-      hiredDate: employee.hiredDate,
-      joinedDate: employee.joinedDate,
-      
-      
-    }
+      title: task.title,
+      priority: task.priority,
+      status: task.status,
+      dueDate: task.dueDate,
+      assigneeId: task.assigneeId,
+    },
   })
-                                       // 4. coding simpan data hasil edit
-  const onSubmit = async (values: z.infer<typeof editEmployeeSchema>) => {
+
+  /* ================= SUBMIT ================= */
+  const onSubmit = async (values: z.infer<typeof editTaskSchema>) => {
     try {
-      const res = await fetch(`/api/employees/${employee.id}`, {
+      const res = await fetch(`/api/tasks/${task.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values)
+        body: JSON.stringify(values),
       })
 
-      const data = await res.json()
-      if (!res.ok) {
-        toast.error(data.message || "Failed to update role")
-        return
-      }
+      if (!res.ok) throw new Error()
 
-      toast.success("Role updated successfully")
-      form.reset(values)
+      toast.success("Task berhasil diperbarui")
       setOpen(false)
-
-      // panggil callback untuk refresh tabel
       onSuccess()
     } catch (error) {
-      toast.error("An unexpected error occurred.")
+      toast.error("Gagal memperbarui task")
       console.error(error)
     }
   }
-                                       // 5. render komponen dialog dan form
+
+  /* ================= RENDER ================= */
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -166,179 +130,106 @@ export function EditTaskDialog({ employee, onSuccess }: EditEmployeeDialogProps)
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>Edit task</DialogTitle>
-          <DialogDescription>Edit the task and its details.</DialogDescription>
+          <DialogTitle>Edit Task</DialogTitle>
+          <DialogDescription>Perbarui data task</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
             <FormField
               control={form.control}
-              name="Name"
-              render={({ field, fieldState }) => (
+              name="title"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>email</FormLabel>
-                  <FormControl>
-                    <Input type="email"{...field} />
-                  </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>status</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} className="resize-none" />
-                  </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-
-
-            </div>
-
-           
-            
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-              control={form.control}
-              name="hiredDate"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>hiredDate</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="joinedDate"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>joinedDate</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage>{fieldState?.error?.message}</FormMessage>
-                </FormItem>
-              )}
-            />
-            </div>
-
-
-
-            <div className="grid grid-cols-2 gap-4">
-              
-            
-            <FormField
-              control={form.control}
-              name="roleId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  {!loadingRoles ? (
-                    <Select
-                      onValueChange={(val) => field.onChange(Number(val))}
-                      value={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Pilih role..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.id.toString()}>
-                            {role.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="h-10 border rounded-md px-3 py-2 text-sm opacity-50">
-                      Memuat role...
-                    </div>
-                  )}
-                  <FormDescription>
-                    Role yang akan diberikan kepada karyawan ini
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-          <FormField
+            <FormField
               control={form.control}
-              name="departmentId"
+              name="assigneeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  {!loadingDepartments ? (
-                    <Select
-                      onValueChange={(val) => field.onChange(Number(val))}
-                      value={field.value?.toString()}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Pilih department..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {departments.map((department) => (
-                          <SelectItem key={department.id} value={department.id.toString()}>
-                            {department.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="h-10 border rounded-md px-3 py-2 text-sm opacity-50">
-                      Memuat department...
-                    </div>
-                  )}
-                  <FormDescription>
-                    Department yang akan diberikan kepada karyawan ini
-                  </FormDescription>
+                  <FormLabel>Assignee</FormLabel>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value?.toString()}
+                    disabled={loadingEmployees}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih assignee" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {employees.map((e) => (
+                        <SelectItem key={e.id} value={e.id.toString()}>
+                          {e.Name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            </div>
-            
 
-            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} className="resize-none" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
-              <Button type="submit">Update Role</Button>
+              <Button type="submit">Update Task</Button>
             </DialogFooter>
+
           </form>
         </Form>
       </DialogContent>

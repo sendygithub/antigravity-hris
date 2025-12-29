@@ -35,7 +35,7 @@ const editDepartmentSchema = z.object({
 })
                                         // 2. deklarasi props untuk komponen EditRoleDialog
 type EditDepartmentDialogProps = {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    department: {
+                                                                                                                                                                               department: {
         id: number 
         description: string 
         name: string 

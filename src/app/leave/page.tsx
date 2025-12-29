@@ -7,6 +7,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { LeaveRequest } from "../../../generated/prisma";
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash } from "lucide-react"
+import EditLeaveDialog from "@/components/leave/edit-form";
 export const dynamic = 'force-dynamic';
 
 // =================konversi iso date ke indonesia  =================
@@ -17,6 +18,50 @@ export function formatTanggalID(date: string | Date) {
     year: "numeric",
   }).format(new Date(date));
 }
+
+export default function LeavePage() {
+     // ================= STATE =================
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+    const [deletingId, setdeletingId] = React.useState(false);
+// ================= FETCH DATA =================
+    const fetchLeave = async () => {
+         setLoading(true) 
+        try {
+            const res = await fetch("/api/leave");
+            if (!res.ok) throw new Error("Failed to fetch")
+            const result = await res.json()
+            setData(result)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchLeave();
+    }, []);
+
+//DELETE LEAVE REQUEST
+const handleDelete = async (id: number) => {
+  if (!confirm("Yakin ingin menghapus data ini?")) return
+
+  try {
+    const res = await fetch(`/api/leave/${id}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) throw new Error("Failed to delete leave request")
+       setData(prev => prev.filter(item => Number(item.id) !== id))
+
+  } catch (error) {
+    console.error(error)
+  } finally {
+    setdeletingId(false)
+  }
+}
+
+// Definisi kolom tabel
 const dataleave : ColumnDef<LeaveRequest>[]  = [
     {
         accessorKey: "id",  
@@ -56,22 +101,16 @@ const dataleave : ColumnDef<LeaveRequest>[]  = [
         id: "actions",
         header: "Actions",
         cell: ({ row }) => {
-            const task = row.original
+            const leave = row.original
 
             return (
                 <div className="flex gap-2">
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {  }}
-                    >
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-
+                    <EditLeaveDialog leave={leave} onSuccess={fetchLeave}/>
                     <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => { }}
+                        disabled={deletingId === true}
+                        onClick={() => { handleDelete(leave.id) }}
                     >
                         <Trash className="h-4 w-4" />
                     </Button>
@@ -80,28 +119,9 @@ const dataleave : ColumnDef<LeaveRequest>[]  = [
         },
     },
 ]
-export default function LeavePage() {
-    const [data, setData] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
 
-    const fetchLeave = async () => {
-         setLoading(true) 
-        try {
-            const res = await fetch("/api/leave");
-            if (!res.ok) throw new Error("Failed to fetch")
-            const result = await res.json()
-            setData(result)
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        fetchLeave();
-    }, []);
-
+    
+    
     if (loading) return <p>Loading Data...</p>
 
 

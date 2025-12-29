@@ -22,15 +22,6 @@ export function formatTanggalID(date: string | Date) {
 }
 
 
-
-
-
-
-
-
-
-
-
 export default function EmployeesPage() {
 // ================= STATE =================
   const [data, setData] = React.useState([]);
@@ -127,11 +118,6 @@ const columns: ColumnDef<Employee>[] = [
         header: "Actions",
         cell: ({ row }) => {
             const employees = row.original
-
-
-
-
-
             return (
                 <div className="flex gap-2">
                         <EditEmployeeDialog employee={employees} onSuccess={fetchEmployees} />

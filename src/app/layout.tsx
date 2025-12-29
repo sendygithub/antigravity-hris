@@ -30,7 +30,7 @@ export default function RootLayout({
           <AppShell>
             {children}
           </AppShell>
-          <Toaster />
+          <Toaster position="top-center"/>
         </ThemeProvider>
       </body>
     </html>

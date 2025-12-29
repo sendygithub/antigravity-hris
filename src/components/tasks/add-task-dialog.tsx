@@ -42,8 +42,10 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
+
+
+// --- Zod schema disesuaikan dengan Prisma ---
 const formSchema = z.object({
-    
     assigneeId: z.string().min(1, "Please select employee"),
     title: z.string().min(2, "Title is required"),
     status: z.string().min(1, "Status is required"),
@@ -62,17 +64,14 @@ export function AddTaskDialog({ onSuccess }: { onSuccess?: () => void }) {
             status: "",
             dueDate: new Date(),
             assigneeId: "",
-            id: "",
             
         },
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
          try {
-
             const payload = {
                 ...values,
-                
                 assigneeId: parseInt(values.assigneeId),
                 dueDate: new Date(values.dueDate).toISOString(),
             }
@@ -86,7 +85,7 @@ export function AddTaskDialog({ onSuccess }: { onSuccess?: () => void }) {
         })
             const data = await res.json()
             if (!res.ok) {
-                toast.error(data.message || "Failed to create role")
+                toast.error(data.message || "Failed to create task")
             }
             toast.success("task created successfully")
 

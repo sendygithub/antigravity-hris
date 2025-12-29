@@ -7,7 +7,7 @@ import { AddTaskDialog } from "@/components/tasks/add-task-dialog";
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash } from "lucide-react"
 import * as React from "react";
-import { EditTaskDialog } from "@/components/leave/edit-form";
+import { EditTaskDialog } from "@/components/tasks/edit-form";
 
 
 
@@ -19,7 +19,59 @@ export function formatTanggalID(date: string | Date) {
     year: "numeric",
   }).format(new Date(date));
 }
+
+
 export const dynamic = 'force-dynamic';
+
+export default function TasksPage() {
+    // ================= STATE =================
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true); 
+    const [deletingId, setdeletingId] = React.useState(false);
+
+// ================= FETCH DATA =================
+    const fetchTasks = async () => {
+         setLoading(true) 
+        try {
+            const res = await fetch("/api/tasks");
+            if (!res.ok) throw new Error("Failed to fetch")
+            const result = await res.json()
+            setData(result)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchTasks();
+    }, []);
+
+    //DELETE EMPLOYEE
+const handleDelete = async (id: number) => {
+  if (!confirm("Yakin ingin menghapus data ini?")) return
+
+  try {
+    const res = await fetch(`/api/tasks/${id}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) throw new Error("Failed to delete task")
+       setData(prev => prev.filter(item => Number(item.id) !== id))
+
+  } catch (error) {
+    console.error(error)
+  } finally {
+    setdeletingId(false)
+  }
+}
+
+
+
+    
+
+
+// Definisi kolom tabel
 const dataTask: ColumnDef<Task>[] = [
     {
         accessorKey: "id",
@@ -55,12 +107,13 @@ const dataTask: ColumnDef<Task>[] = [
 
             return (
                 <div className="flex gap-2">
-                    <EditTaskDialog task={task} onSuccess={() => {}}/>
+                    <EditTaskDialog task={task} onSuccess={fetchTasks} />
 
                     <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => { }}
+                        disabled={deletingId === true}
+                        onClick={() => {handleDelete(task.id)}}
                     >
                         <Trash className="h-4 w-4" />
                     </Button>
@@ -70,42 +123,16 @@ const dataTask: ColumnDef<Task>[] = [
     },
 ]
 
-export default function TasksPage() {
-    const [data, setData] = React.useState([]);
-    const [loading, setLoading] = React.useState(true); 
-
-    const fetchTasks = async () => {
-         setLoading(true) 
-        try {
-            const res = await fetch("/api/tasks");
-            if (!res.ok) throw new Error("Failed to fetch")
-            const result = await res.json()
-            setData(result)
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        fetchTasks();
-    }, []);
-
-    if (loading) return <p>Loading Task Data...</p>
-
-    return (
+if (loading) return <p>Loading Task Data...</p>
+return (
         <div className="space-y-6 h-full flex flex-col">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight">Task Board</h1>
                 <AddTaskDialog onSuccess={fetchTasks}/>
             </div>
             <div className="p-8">
-                     <TableTask columns={dataTask} data={data}/>
-                       </div>
-               </div>
-
-           
-        
+            <TableTask columns={dataTask} data={data}/>
+        </div>
+               </div>  
     );
 }
