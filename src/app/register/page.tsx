@@ -1,9 +1,10 @@
 import React from 'react'
-import { registerPage } from '@/components/register/form-register'
+import RegisterPage from '@/components/register/form-register'
+
 const Register = () => {
   return (
     <div>
-        {registerPage()}
+      <RegisterPage />
     </div>
   )
 }

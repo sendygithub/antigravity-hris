@@ -5,22 +5,30 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
+model User {
+  id        Int      @id @default(autoincrement()) // Primary key auto increment
+  name      String
+  email     String   @unique                        // email unik
+  password  String
+  role      String?                                 // optional
+  createdAt DateTime @default(now())               // timestamp saat dibuat
+  updatedAt DateTime @updatedAt                    // timestamp saat update
+}
 model Employee {
   id           Int        @id @default(autoincrement())
   Name         String
   email        String   @unique
-  status       String
-  hiredDate    DateTime
-  joinedDate   DateTime
+  status       String   @default("Active")
+  hiredDate    DateTime @default(now())
+  joinedDate   DateTime @default(now())
   updatedAt    DateTime @updatedAt
   createdAt    DateTime @default(now())
-  roleId       Int
-  departmentId Int
+  roleId       Int?
+  departmentId Int?
 
   attendance    Attendance[]
-  role          Role           @relation(fields: [roleId], references: [id])
-  department    Department     @relation(fields: [departmentId], references: [id])
+  role          Role?           @relation(fields: [roleId], references: [id])
+  department    Department?     @relation(fields: [departmentId], references: [id])
   payroll       Payroll[]
   leaveRequests LeaveRequest[]
   tasks         Task[]
