@@ -22,7 +22,7 @@ export async function DELETE(
 
         // hapus record Payroll berdasarkan id
         const payroll = await prisma.payroll.delete({
-            where: { id }, // karena schema id = String, tidak perlu konversi
+            where: { id: Number(id) },// karena schema id = String, tidak perlu konversi
         });
 
         // jika berhasil → kembalikan data yang dihapus
@@ -50,45 +50,65 @@ export async function DELETE(
     }
 }
 // ================= PUT API =================
+// PUT API untuk update Payroll berdasarkan id
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id: payrollId } = await context.params;
 
-interface Params {
-    params: { id: string };
-}
+  if (!payrollId) {
+    return NextResponse.json(
+      { error: "ID payroll tidak ditemukan di URL" },
+      { status: 400 }
+    );
+  }
 
-export async function PUT(req: Request, { params }: Params) {
-    const payrollId = params.id;
+  try {
+    const body = await req.json();
+    console.log("PUT payroll body:", body);
 
-    if (!payrollId) {
-        return NextResponse.json({ error: "ID payroll tidak ditemukan di URL" }, { status: 400 });
+    const { employeeId, salary, status, payDate } = body;
+
+    // VALIDASI YANG BENAR
+    if (
+      employeeId === undefined ||
+      salary === undefined ||
+      status === undefined ||
+      payDate === undefined
+    ) {
+      return NextResponse.json(
+        { error: "Semua field wajib diisi" },
+        { status: 400 }
+      );
     }
 
-    try {
-        const body = await req.json();
-        const { employeeId, salary, status, paymentDate } = body;
+    // UPDATE DATABASE
+    const updatedPayroll = await prisma.payroll.update({
+      where: { id: Number(payrollId) },
+      data: {
+        employeeId,
+        salary: new Decimal(salary),
+        status,
+        paymentDate: new Date(payDate),
+      },
+    });
 
-        if (!employeeId || !salary || !status || !paymentDate) {
-            return NextResponse.json(
-                { error: "Semua field wajib diisi: employeeId, salary, status, paymentDate" },
-                { status: 400 }
-            );
-        }
+    // RESPONSE SUKSES
+    return NextResponse.json(updatedPayroll, { status: 200 });
+  } catch (error: any) {
+    console.error("Error updating payroll:", error);
 
-        const updatedPayroll = await prisma.payroll.update({
-            where: { id: payrollId }, // <- ID pasti ada
-            data: {
-                employeeId,
-                salary: new Decimal(salary),
-                status,
-                paymentDate: new Date(paymentDate),
-            },
-        });
-
-        return NextResponse.json(updatedPayroll);
-    } catch (error: any) {
-        console.error("Error updating payroll:", error);
-        if (error.code === "P2025") {
-            return NextResponse.json({ error: "Payroll tidak ditemukan" }, { status: 404 });
-        }
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error.code === "P2025") {
+      return NextResponse.json(
+        { error: "Payroll tidak ditemukan" },
+        { status: 404 }
+      );
     }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
