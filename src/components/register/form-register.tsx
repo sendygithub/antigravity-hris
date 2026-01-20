@@ -9,6 +9,7 @@ import Link from "next/link"
 import { Building2, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { prisma } from "@/lib/db"
 
 export function registerPage() {
     const [name, setName] = useState("")

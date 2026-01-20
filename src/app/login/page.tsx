@@ -11,8 +11,8 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 export default function LoginPage() {
-    const [email, setEmail] = useState("admin@company.com")
-    const [password, setPassword] = useState("password")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
 
@@ -38,6 +38,7 @@ export default function LoginPage() {
 
             toast.success("Welcome back!")
             router.push("/dashboard")
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             toast.error("An error occurred. Please try again.")
         } finally {
@@ -56,7 +57,7 @@ export default function LoginPage() {
                     </div>
                     <CardTitle className="text-2xl">Login</CardTitle>
                     <CardDescription>
-                        Enter your credentials to access the HR Portal
+                        Enter your credentials to access the HR Portal 
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
@@ -66,7 +67,6 @@ export default function LoginPage() {
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="admin@company.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -95,7 +95,7 @@ export default function LoginPage() {
                             )}
                         </Button>
                         <p className="text-sm text-center">
-                            Don't have an account?{' '}
+                            Dont have an account?{' '}
                             <Link href="/register" className="text-primary hover:underline">
                                 Register
                             </Link>

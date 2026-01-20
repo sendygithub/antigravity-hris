@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
     LayoutDashboard,
@@ -22,7 +21,7 @@ import {
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
+type SidebarProps = React.HTMLAttributes<HTMLDivElement>
 
 export function Sidebar({ className }: SidebarProps) {
     const pathname = usePathname()
@@ -37,44 +36,44 @@ export function Sidebar({ className }: SidebarProps) {
         {
             label: "Employees",
             icon: Users,
-            href: "/employees",
-            active: pathname === "/employees",
+            href: "/dashboard/employees",
+            active: pathname === "employees",
         },
         {
             label: "Attendance",
             icon: CalendarCheck,
-            href: "/attendance",
+            href: "/dashboard/attendance",
             active: pathname === "/attendance",
         },
         {
             label: "Departments",
             icon: Building2,
-            href: "/departments",
-            active: pathname === "/departments",
+            href: "/dashboard/departments",
+            active: pathname === "departments",
         },
         {
             label: "Roles",
             icon: ShieldAlert,
-            href: "/roles",
-            active: pathname === "/roles",
+            href: "/dashboard/roles",
+            active: pathname === "roles",
         },
         {
             label: "Payroll",
             icon: CreditCard,
-            href: "/payroll",
-            active: pathname === "/payroll",
+            href: "/dashboard/payroll",
+            active: pathname === "payroll",
         },
         {
             label: "Leave Request",
             icon: FileText,
-            href: "/leave",
-            active: pathname === "/leave",
+            href: "/dashboard/leave",
+            active: pathname === "leave",
         },
         {
             label: "Tasks",
             icon: CheckSquare,
-            href: "/tasks",
-            active: pathname === "/tasks",
+            href: "/dashboard/tasks",
+            active: pathname === "tasks",
         },
     ]
 
@@ -86,7 +85,7 @@ export function Sidebar({ className }: SidebarProps) {
                         <div className="p-1 bg-primary rounded-lg">
                             <Building2 className="h-6 w-6 text-primary-foreground" />
                         </div>
-                        <h2 className="text-xl font-bold tracking-tight">HR PRO</h2>
+                        <h2 className="text-xl font-bold tracking-tight">HR4</h2>
                         <div className="ml-auto">
                             <ModeToggle />
                         </div>
@@ -106,8 +105,8 @@ export function Sidebar({ className }: SidebarProps) {
                     </div>
                 </div>
             </div>
-            <div className="absolute bottom-4 left-0 w-full px-3">
-                <div className="flex items-center justify-between px-3 py-3 rounded-lg bg-secondary/50">
+            <div className="absolute bottom-2 left-0 px-3">
+                <div className="flex items-center justify-between px-3 py-3 rounded-lg hover:bg-accent/50 transition-colors">
                     <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
                             <AvatarImage src="https://github.com/shadcn.png" />
@@ -127,7 +126,7 @@ export function Sidebar({ className }: SidebarProps) {
                             window.location.href = "/login";
                         }}
                     >
-                        <LogOut className="h-4 w-4" />
+                        <LogOut className="h-7 w-7" />
                         <span className="sr-only">Logout</span>
                     </Button>
                 </div>
