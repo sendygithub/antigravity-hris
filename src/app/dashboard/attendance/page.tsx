@@ -6,10 +6,9 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Attendance } from "../../../generated/prisma";
 import * as React from "react";
 import { Button } from "@/components/ui/button"
-import { Pencil, Trash } from "lucide-react"
 import {  useEffect } from "react";
 import EditAttendanceDialog from "@/components/attendance/edit-attendance";
-
+import { Trash } from "lucide-react";
 
 // =================konversi iso date ke indonesia  =================
 export function formatTanggalID(date: string | Date) {

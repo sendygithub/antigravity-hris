@@ -8,7 +8,6 @@ import { Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EditEmployeeDialog } from "@/components/employees/edit-form";
 import { Employee } from "../../../generated/prisma";
-import { de } from "date-fns/locale";
 export const dynamic = 'force-dynamic';
 
 
