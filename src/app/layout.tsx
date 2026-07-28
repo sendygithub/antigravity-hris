@@ -5,11 +5,14 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
-  title: "HR Management System",
-  description: "Modern HR Management Application",
+  title: "POSPro",
+  description: "POS & Inventory Management System",
 };
 
 export default function RootLayout({
@@ -21,7 +24,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          inter.className,
+          inter.variable,
           "min-h-screen bg-background font-sans antialiased",
         )}
       >
@@ -32,8 +35,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-
-          <Toaster position="top-center" />
+          <Toaster position="top-center" richColors closeButton />
         </ThemeProvider>
       </body>
     </html>

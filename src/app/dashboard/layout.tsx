@@ -1,25 +1,34 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+export const dynamic = "force-dynamic";
 import { AppShell } from "@/components/layout/app-shell";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
-  title: "HR Management System",
-  description: "Modern HR Management Application",
+  title: "POSPro — Dashboard",
+  description: "POS & Inventory Management System",
 };
 
-export default function RootLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={cn(inter.className, "min-h-screen bg-background font-sans antialiased")}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          inter.variable,
+          "min-h-screen bg-background font-sans antialiased",
+        )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -29,7 +38,7 @@ export default function RootLayout({
           <AppShell>
             {children}
           </AppShell>
-          <Toaster position="top-center"/>
+          <Toaster position="top-center" richColors closeButton />
         </ThemeProvider>
       </body>
     </html>
